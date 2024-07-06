@@ -1,7 +1,7 @@
 from django.shortcuts import get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from .models import UserProfile, Follower
-from .serializers import ProfileSerializer, FollowerSerializer
+from .serializers import ProfileSerializer, FollowerSerializer, ProfileUpdateSerializer
 from django.conf import settings
 from django.db import IntegrityError 
 from rest_framework import generics , viewsets, mixins
@@ -21,23 +21,19 @@ class ProfileViewSet(viewsets.ReadOnlyModelViewSet):  # Use ReadOnlyModelViewSet
 
 
 
-class ProfileUpdateViewSet(mixins.CreateModelMixin,
-                   mixins.RetrieveModelMixin,
-                   mixins.UpdateModelMixin,
-                   GenericViewSet):  # Separate ViewSet for updates
+class ProfileUpdateView(RetrieveUpdateAPIView):
     queryset = UserProfile.objects.all()
-    serializer_class = ProfileSerializer
-    permission_classes = [IsAuthenticated, IsOwnerOrReadOnly] 
-    @action(detail=True, methods=['get', 'put', 'patch'], url_path='update_profile')
-    def update_profile(self, request, pk=None):
-        instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        self.perform_update(serializer)
-        return Response(serializer.data)
+    serializer_class = ProfileUpdateSerializer
+    permission_classes = [IsAuthenticated, IsOwnerOrReadOnly]
+
+    def get_object(self):
+        obj = self.get_queryset().get(pk=self.kwargs['pk'])
+        self.check_object_permissions(self.request, obj)
+        return obj
 
     def perform_update(self, serializer):
-        serializer.save()
+        serializer.save(user=self.request.user)
+
 
 
 class FollowerViewSet(viewsets.ModelViewSet):
