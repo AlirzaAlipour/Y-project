@@ -14,6 +14,7 @@ from rest_framework.decorators import action, permission_classes
 from rest_framework.permissions import IsAuthenticated, IsAdminUser, IsAuthenticatedOrReadOnly
 from .permissions import IsOwnerOrReadOnly
 from rest_framework import status
+import os
 
 
 class ProfileViewSet(viewsets.ReadOnlyModelViewSet):  # Use ReadOnlyModelViewSet
@@ -35,7 +36,10 @@ class ProfileUpdateView(RetrieveUpdateAPIView):
 
     def perform_update(self, serializer):
         serializer.save(user=self.request.user)
-
+        profile_picture = self.request.FILES.get('profile_picture')
+        if profile_picture:
+            serializer.instance.profile_picture = profile_picture
+            serializer.instance.save()
 
 
 class FollowerViewSet(viewsets.ModelViewSet):
