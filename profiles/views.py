@@ -69,3 +69,11 @@ class FollowerViewSet(viewsets.ModelViewSet):
             headers = self.get_success_headers(serializer.data)
             return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
         
+
+class FollowersListView(generics.ListAPIView):
+    serializer_class = FollowerSerializer
+
+    def get_queryset(self):
+        profile_id = self.kwargs['profile_id']
+        user_profile = UserProfile.objects.get(id=profile_id)
+        return user_profile.followers.all()
