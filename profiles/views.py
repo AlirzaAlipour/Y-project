@@ -2,6 +2,8 @@ from django.shortcuts import get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from .models import UserProfile, Follower
 from .serializers import ProfileSerializer, FollowerSerializer, ProfileUpdateSerializer, FollowingSerializer
+from posts.serializers import PostSerializer
+from posts.models import Post
 from django.conf import settings
 from django.db import IntegrityError 
 from rest_framework import generics , viewsets, mixins
@@ -85,3 +87,12 @@ class FollowingsListView(generics.ListAPIView):
         profile_id = self.kwargs['profile_id']
         user_profile = UserProfile.objects.get(id=profile_id)
         return Follower.objects.filter(follower=user_profile)
+    
+
+class PostViewSet(viewsets.ReadOnlyModelViewSet):
+    serializer_class = PostSerializer
+
+    def get_queryset(self):
+        profile_id = self.kwargs['profile_id']
+        user_profile = UserProfile.objects.get(id=profile_id)
+        return Post.objects.filter(user=user_profile)

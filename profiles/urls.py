@@ -1,10 +1,11 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import ProfileViewSet, ProfileUpdateView, FollowerViewSet, FollowersListView, FollowingsListView
+from .views import ProfileViewSet, ProfileUpdateView, FollowerViewSet, FollowersListView, FollowingsListView,PostViewSet
 
 router = DefaultRouter()
 router.register("profiles", ProfileViewSet, basename='profile')
 router.register(r'profiles/(?P<profile_pk>\d+)/follow', FollowerViewSet, basename='follower')
+router.register(r'profiles/(?P<profile_id>\d+)/posts', PostViewSet, basename='post')
 
 
 urlpatterns = [
