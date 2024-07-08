@@ -11,12 +11,17 @@ class ProfileSerializer(serializers.ModelSerializer):
         lookup_field='id',
         lookup_url_kwarg='profile_id'
     )
+    followings_list = serializers.HyperlinkedIdentityField(
+        view_name='followings_list',
+        lookup_field='id',
+        lookup_url_kwarg='profile_id'
+    )
 
     
     class Meta:
         model = UserProfile
-        fields = ['id', 'user', 'bio', 'location', 'profile_picture', 'followers_count', 'followings_count', 'followers_list']
-        read_only_fields = ['id', 'followers_count', 'followings_count', 'followers_list']
+        fields = ['id', 'user', 'bio', 'location', 'profile_picture', 'followers_count', 'followings_count', 'followers_list', "followings_list"]
+        read_only_fields = ['id', 'followers_count', 'followings_count', 'followers_list', "followings_list"]
 
     def get_followers_count(self, obj):
         return obj.followers.count()
@@ -32,22 +37,33 @@ class ProfileUpdateSerializer(serializers.ModelSerializer):
 
 
 class FollowerSerializer(serializers.ModelSerializer):
-    username = serializers.SerializerMethodField()
     follower = serializers.HyperlinkedRelatedField(
         view_name='profile-detail',
         read_only=True,
         lookup_field='id',
         lookup_url_kwarg='pk'
     )
-    following = serializers.HyperlinkedRelatedField(
+    follower_username = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Follower
+        fields = ['id', 'follower', 'follower_username']
+
+    def get_follower_username(self, obj):
+        return obj.follower.user.username
+    
+class FollowingSerializer(serializers.ModelSerializer):
+    followed = serializers.HyperlinkedRelatedField(
         view_name='profile-detail',
         read_only=True,
         lookup_field='id',
         lookup_url_kwarg='pk'
     )
+    followed_username = serializers.SerializerMethodField()
 
     class Meta:
         model = Follower
-        fields = ['id','username', 'follower', 'following']
-    def get_username(self, obj):
-        return obj.follower.user.username
+        fields = ['id', 'followed', 'followed_username']
+
+    def get_followed_username(self, obj):
+        return obj.followed.user.username
